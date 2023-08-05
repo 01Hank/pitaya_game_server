@@ -9,13 +9,11 @@ import (
 //比如db服务 活动服务等等
 
 
-type Base struct {
-	name string
-}
+type Base struct {}
 
 //服务初始化执行
 func (base *Base) Init() error {
-	logger.Log.Info("module is init base")
+	logger.Log.Info("module is Init base")
 	return nil
 }
 

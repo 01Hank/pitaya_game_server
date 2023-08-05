@@ -11,7 +11,7 @@ type TestModule struct {
 }
 
 func (tm *TestModule) Init() error {
-	logger.Log.Info("TestModule Init")
+	logger.Log.Info("TestModule 初始化")
 	return nil
 }
 
