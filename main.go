@@ -5,6 +5,8 @@ import (
 	"flag"
 	"strconv"
 
+	"pitaya_game_server/game_modules"
+
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/acceptor"
 	"github.com/topfreegames/pitaya/v2/config"
@@ -17,21 +19,30 @@ import (
 type (
 	GameServer struct {
 		app pitaya.Pitaya
-		module_mgr *ModuleManager
+		module_mgr *game_modules.ModuleManager //组件mgr
+		service_mgr *ServiceManager //服务管理
+	}
+
+	ServerConfig struct {
+		exclude_modules  []string //不启动的组件
+		exclude_services []string //不启动的服务
 	}
 )
 
-func (gs *GameServer) start() {
+func (gs *GameServer) start(conf *ServerConfig) {
 	defer gs.app.Shutdown()
 
 	//注册所有modules
-	gs.module_mgr.RegisterToPitaya(gs.app)
+	gs.module_mgr.RegisterToPitaya(gs.app, conf.exclude_modules)
+
+	//注册所有services
+	gs.service_mgr.RegisterServices(gs, conf.exclude_services)
 
 	gs.app.Start()
 }
 
 var app pitaya.Pitaya
-var game_server *GameServer
+var game_server GameServer
 
 func main()  {
 	port := flag.Int("port", 3250, "the port to listen")
@@ -50,14 +61,17 @@ func main()  {
 	app, bs = createApp(*port, *isFrontend, *svType, meta, *rpcServerPort)
 	app.RegisterModule(bs, "bindingsStorage")
 
-	game_server = &GameServer{
-		module_mgr : InitModules(),
+	game_server = GameServer{
 		app : app,
+		module_mgr  : game_modules.InitModules(),
+		service_mgr : InitServices(),
 	}
 
-	game_server.start()
+	conf := serverConf()
+	game_server.start(conf)
 }
 
+// 创建一个pitaya服务
 func createApp(port int, isFrontend bool, svType string, meta map[string]string, rpcServerPort int) (pitaya.Pitaya, *modules.ETCDBindingStorage) {
 	builder := pitaya.NewDefaultBuilder(isFrontend, svType, pitaya.Cluster, meta, *config.NewDefaultBuilderConfig())
 
@@ -90,4 +104,9 @@ func createApp(port int, isFrontend bool, svType string, meta map[string]string,
 	}
 
 	return builder.Build(), bs
+}
+
+// 获取服务器配置
+func serverConf() *ServerConfig {
+	return &ServerConfig{}
 }
