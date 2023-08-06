@@ -10,8 +10,12 @@ type TestModule struct {
 	age  int
 }
 
+func (tm *TestModule) TestP() {
+	logger.Log.Info("这是模块测试调用")
+}
+
 func (tm *TestModule) Init() error {
-	logger.Log.Info("TestModule 初始化")
+	logger.Log.Info("TestModule 模块初始化")
 	return nil
 }
 

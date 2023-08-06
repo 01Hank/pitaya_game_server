@@ -69,15 +69,22 @@ func (mgr *ServiceManager) GetModule(name string) (*CpWrapper, error) {
 func (mgr *ServiceManager) RegisterServices(gs *GameServer, exclude_components []string) error {
 	mgr.server = gs
 
-	mgr.components["test"] = &CpWrapper{
-		component : game_service.NewTestService(gs.module_mgr),
-		name : "test",
-	}
+	//test服务
+	comp, service_name := game_service.NewTestService(gs.module_mgr)
+	appendCp(mgr.components, comp, service_name)
 
 	//注册服务
 	mgr.registerService(exclude_components)
 	
 	return nil
+}
+
+// 添加服务
+func appendCp(ms map[string]*CpWrapper, comp component.Component, service_name string){
+	ms[service_name] = &CpWrapper{
+		name      : service_name,
+		component : comp,
+	}
 }
 
 // 初始化服务

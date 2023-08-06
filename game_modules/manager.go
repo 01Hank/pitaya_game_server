@@ -2,6 +2,7 @@ package game_modules
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/logger"
@@ -10,8 +11,9 @@ import (
 
 type (
 	MdWrapper struct {
-		module interfaces.Module 
-		name string
+		module   interfaces.Module 
+		name     string
+		m_type   reflect.Type
 	}
 
 	ModuleManager struct {
@@ -20,7 +22,7 @@ type (
 )
 
 // 获取module服务
-func (mgr *ModuleManager) GetModule(name string) (*MdWrapper, error) {
+func (mgr *ModuleManager) GetModule(name string) (interface{}, error) {
 	if len(mgr.modules) <= 0 {
 		return nil, fmt.Errorf("not find module")
 	}
