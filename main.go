@@ -5,7 +5,7 @@ import (
 	"flag"
 	"strconv"
 
-	"pitaya_game_server/game_modules"
+	"pitaya_game_server/test_module"
 
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/acceptor"
@@ -19,8 +19,8 @@ import (
 type (
 	GameServer struct {
 		app pitaya.Pitaya
-		module_mgr *game_modules.ModuleManager //组件mgr
 		service_mgr *ServiceManager //服务管理
+		tm *test_module.TestModule
 	}
 
 	ServerConfig struct {
@@ -32,8 +32,7 @@ type (
 func (gs *GameServer) start(conf *ServerConfig) {
 	defer gs.app.Shutdown()
 
-	//注册所有modules
-	gs.module_mgr.RegisterToPitaya(gs.app, conf.exclude_modules)
+	gs.app.RegisterModule(gs.tm, "test_mod")
 
 	//注册所有services
 	gs.service_mgr.RegisterServices(gs, conf.exclude_services)
@@ -63,8 +62,8 @@ func main()  {
 
 	game_server = GameServer{
 		app : app,
-		module_mgr  : game_modules.InitModules(),
 		service_mgr : InitServices(),
+		tm : test_module.NewTestModule(),
 	}
 
 	conf := serverConf()

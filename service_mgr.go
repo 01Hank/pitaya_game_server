@@ -70,7 +70,7 @@ func (mgr *ServiceManager) RegisterServices(gs *GameServer, exclude_components [
 	mgr.server = gs
 
 	//test服务
-	comp, service_name := game_service.NewTestService(gs.module_mgr)
+	comp, service_name := game_service.NewTestService(gs.tm)
 	appendCp(mgr.components, comp, service_name)
 
 	//注册服务
