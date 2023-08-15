@@ -3,6 +3,7 @@ package game_service
 import (
 	"fmt"
 	"context"
+	"strings"
 
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/component"
@@ -12,7 +13,7 @@ import (
 type (
 	TestService struct {
 		Base
-		app *pitaya.Pitaya
+		app pitaya.Pitaya
 		age int
 	}
 
@@ -34,12 +35,17 @@ func (ts *TestService) Init() {
 	fmt.Println("测试服务初始化:" + string(ts.age))
 }
 
-func NewTestService(app *pitaya.Pitaya) (comp component.Component, service_name string) {
+func NewTestService(app pitaya.Pitaya) (comp component.Component, service_name string) {
+	service_name = "test_service"
 	comp = &TestService{
 		age : 1,
 		app : app,
 	}
 
-	service_name = "test_service"
-	return
+	app.Register(comp,
+		component.WithName(service_name),
+		component.WithNameFunc(strings.ToLower),
+	)
+
+	return comp, service_name
 }

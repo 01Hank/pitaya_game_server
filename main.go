@@ -16,7 +16,7 @@ import (
 
 type (
 	GameServer struct {
-		app *pitaya.Pitaya
+		app pitaya.Pitaya
 		service_mgr *ServiceManager //服务管理
 	}
 
