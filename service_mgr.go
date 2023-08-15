@@ -51,26 +51,12 @@ func (mgr *ServiceManager) registerService(exclude_components []string) error {
 	return nil
 }
 
-// 获取module服务
-func (mgr *ServiceManager) GetModule(name string) (*CpWrapper, error) {
-	if len(mgr.components) <= 0 {
-		return nil, fmt.Errorf("not find component")
-	}
-
-	md, ok := mgr.components[name]
-	if !ok {
-		return nil, fmt.Errorf("not find component")
-	}
-
-	return md, nil
-}
-
 // 注册所有服务
 func (mgr *ServiceManager) RegisterServices(gs *GameServer, exclude_components []string) error {
 	mgr.server = gs
 
 	//test服务
-	comp, service_name := game_service.NewTestService(gs.tm)
+	comp, service_name := game_service.NewTestService(gs.app)
 	appendCp(mgr.components, comp, service_name)
 
 	//注册服务

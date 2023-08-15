@@ -16,7 +16,7 @@ import (
 
 type (
 	GameServer struct {
-		app pitaya.Pitaya
+		app *pitaya.Pitaya
 		service_mgr *ServiceManager //服务管理
 	}
 
@@ -28,8 +28,6 @@ type (
 
 func (gs *GameServer) start(conf *ServerConfig) {
 	defer gs.app.Shutdown()
-
-	gs.app.RegisterModule(gs.tm, "test_mod")
 
 	//注册所有services
 	gs.service_mgr.RegisterServices(gs, conf.exclude_services)

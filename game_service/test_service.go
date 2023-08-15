@@ -12,7 +12,7 @@ import (
 type (
 	TestService struct {
 		Base
-		app *pitaya.App
+		app *pitaya.Pitaya
 		age int
 	}
 
@@ -34,7 +34,7 @@ func (ts *TestService) Init() {
 	fmt.Println("测试服务初始化:" + string(ts.age))
 }
 
-func NewTestService(app *pitaya.App) (comp component.Component, service_name string) {
+func NewTestService(app *pitaya.Pitaya) (comp component.Component, service_name string) {
 	comp = &TestService{
 		age : 1,
 		app : app,
