@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"context"
 
-	"pitaya_game_server/test_module"
-
+	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/component"
 	"github.com/topfreegames/pitaya/v2/logger"
 )
@@ -13,8 +12,8 @@ import (
 type (
 	TestService struct {
 		Base
+		app *pitaya.App
 		age int
-		tm *test_module.TestModule
 	}
 
 	TestResponse struct {
@@ -25,7 +24,6 @@ type (
 
 func (ts *TestService) Test(ctx context.Context, msg []byte) (*TestResponse, error) {
 	logger.Log.Info("---请求数据:", string(msg))
-	ts.tm.PrintTest()
 	return &TestResponse{
 		Code : 200,
 		Desc : "请求成功",
@@ -36,10 +34,10 @@ func (ts *TestService) Init() {
 	fmt.Println("测试服务初始化:" + string(ts.age))
 }
 
-func NewTestService(tmd *test_module.TestModule) (comp component.Component, service_name string) {
+func NewTestService(app *pitaya.App) (comp component.Component, service_name string) {
 	comp = &TestService{
 		age : 1,
-		tm : tmd,
+		app : app,
 	}
 
 	service_name = "test_service"

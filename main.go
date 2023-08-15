@@ -5,8 +5,6 @@ import (
 	"flag"
 	"strconv"
 
-	"pitaya_game_server/test_module"
-
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/acceptor"
 	"github.com/topfreegames/pitaya/v2/config"
@@ -20,7 +18,6 @@ type (
 	GameServer struct {
 		app pitaya.Pitaya
 		service_mgr *ServiceManager //服务管理
-		tm *test_module.TestModule
 	}
 
 	ServerConfig struct {
@@ -63,7 +60,6 @@ func main()  {
 	game_server = GameServer{
 		app : app,
 		service_mgr : InitServices(),
-		tm : test_module.NewTestModule(),
 	}
 
 	conf := serverConf()
