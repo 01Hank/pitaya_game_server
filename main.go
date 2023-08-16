@@ -100,8 +100,9 @@ func createApp(port int, isFrontend bool, svType string, meta map[string]string,
 	return builder.Build(), bs
 }
 
+//服务管理列表
 var mgr_list map[string]NewFunc = map[string]NewFunc {
-	"game_service" : NewGameMgr,
+	"game_service" : NewGameMgr, //游戏服务
 }
 
 // 创建一个gameserver
