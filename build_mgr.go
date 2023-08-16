@@ -8,6 +8,7 @@ func NewGameMgr (gs *GameServer, sv_type string, isFrontend bool) ServiceMgrIn {
 	base_mgr := ServiceMgrBase{
 		server : gs,
 		services : make(map[string]*ServiceBase),
+		is_frontend : isFrontend,
 	}
 
 	return &GameServiceMgr{

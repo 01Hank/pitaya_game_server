@@ -8,6 +8,7 @@ type (
 	ServiceMgrBase struct {
 		server     *GameServer           //server引用
 		services   map[string]*ServiceBase //所有的服务
+		is_frontend bool // 是否前置服务
 	}
 
 	ServiceBase struct {
