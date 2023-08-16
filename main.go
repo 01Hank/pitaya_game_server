@@ -12,12 +12,13 @@ import (
 	"github.com/topfreegames/pitaya/v2/cluster"
 	"github.com/topfreegames/pitaya/v2/modules"
 	"github.com/topfreegames/pitaya/v2/constants"
+	"github.com/topfreegames/pitaya/v2/logger"
 )
 
 type (
 	GameServer struct {
 		app pitaya.Pitaya
-		service_mgr *ServiceManager //服务管理
+		mgr ServiceMgrIn //服务管理
 	}
 
 	ServerConfig struct {
@@ -28,10 +29,10 @@ type (
 
 func (gs *GameServer) start(conf *ServerConfig) {
 	defer gs.app.Shutdown()
+	defer gs.mgr.Close()
 
 	//注册所有services
-	gs.service_mgr.RegisterServices(gs, conf.exclude_services)
-
+	gs.mgr.Start(gs.app)
 	gs.app.Start()
 }
 
@@ -55,9 +56,9 @@ func main()  {
 	app, bs = createApp(*port, *isFrontend, *svType, meta, *rpcServerPort)
 	app.RegisterModule(bs, "bindingsStorage")
 
-	game_server = GameServer{
-		app : app,
-		service_mgr : InitServices(),
+	game_server, ok := createMgr(app, *svType, *isFrontend)
+	if !ok {
+		return
 	}
 
 	conf := serverConf()
@@ -97,6 +98,27 @@ func createApp(port int, isFrontend bool, svType string, meta map[string]string,
 	}
 
 	return builder.Build(), bs
+}
+
+var mgr_list map[string]NewFunc = map[string]NewFunc {
+	"game_service" : NewGameMgr,
+}
+
+// 创建一个gameserver
+func createMgr(app pitaya.Pitaya, sv_type string, isFrontend bool) (*GameServer, bool) {
+	gs := &GameServer{
+		app : app,
+	}
+
+	mgr_func, ok := mgr_list[sv_type]
+	if !ok {
+		logger.Log.Warn("error sv_type is:", sv_type)
+		return gs, false
+	}
+
+	gs.mgr = mgr_func(gs, sv_type, isFrontend)
+
+	return gs, true
 }
 
 // 获取服务器配置
