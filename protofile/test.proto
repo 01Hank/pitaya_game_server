@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package test_protos;
+option go_package = "./protos";
+
+message TestMsg {
+  string Name = 1;
+}
