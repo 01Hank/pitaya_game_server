@@ -1,50 +1,67 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"flag"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/acceptor"
-	"github.com/topfreegames/pitaya/v2/config"
-	"github.com/topfreegames/pitaya/v2/groups"
 	"github.com/topfreegames/pitaya/v2/cluster"
-	"github.com/topfreegames/pitaya/v2/modules"
+	"github.com/topfreegames/pitaya/v2/config"
 	"github.com/topfreegames/pitaya/v2/constants"
+	"github.com/topfreegames/pitaya/v2/groups"
 	"github.com/topfreegames/pitaya/v2/logger"
+	"github.com/topfreegames/pitaya/v2/modules"
 )
 
 type (
 	GameServer struct {
 		app pitaya.Pitaya
-		mgr ServiceMgrIn //服务管理
+		mgr ServiceMgrIN
+	}
+
+	MongoConfig struct {
+		Host     string
+		Port     string
+		DataName string
+		MaxNum   int
+	}
+
+	RedisConfig struct {
+		Host        string
+		Port        string
+		MaxIdle     int
+		MaxActive   int
+		IdleTimeout time.Duration
 	}
 
 	ServerConfig struct {
-		exclude_modules  []string //不启动的组件
-		exclude_services []string //不启动的服务
+		MongoConf MongoConfig
+		RedisConf RedisConfig
 	}
 )
 
+// 启动
 func (gs *GameServer) start(conf *ServerConfig) {
 	defer gs.app.Shutdown()
 	defer gs.mgr.Close()
 
-	//注册所有services
-	gs.mgr.Start(gs.app)
+	gs.mgr.Start(gs)
 	gs.app.Start()
 }
 
 var app pitaya.Pitaya
-var game_server GameServer
+var gameServer *GameServer
 
-func main()  {
+func main() {
 	port := flag.Int("port", 3250, "the port to listen")
 	svType := flag.String("type", "connector", "the server type")
 	isFrontend := flag.Bool("frontend", true, "if server is frontend")
 	rpcServerPort := flag.Int("rpcsvport", 3434, "the port that grpc server will listen")
-	
+
 	flag.Parse()
 
 	meta := map[string]string{
@@ -56,13 +73,16 @@ func main()  {
 	app, bs = createApp(*port, *isFrontend, *svType, meta, *rpcServerPort)
 	app.RegisterModule(bs, "bindingsStorage")
 
-	game_server, ok := createMgr(app, *svType, *isFrontend)
-	if !ok {
+	gameServer = &GameServer{}
+	gameServer.app = app
+	conf, err := createGameServer(*svType, *isFrontend, gameServer)
+	if err != nil {
+		logger.Log.Errorf(fmt.Sprintf("%v", err))
 		return
 	}
 
-	conf := serverConf()
-	game_server.start(conf)
+	logger.Log.Info("server is start and svType is:", *svType)
+	gameServer.start(conf)
 }
 
 // 创建一个pitaya服务
@@ -100,29 +120,21 @@ func createApp(port int, isFrontend bool, svType string, meta map[string]string,
 	return builder.Build(), bs
 }
 
-//服务管理列表
-var mgr_list map[string]NewFunc = map[string]NewFunc {
-	"game_service" : NewGameMgr, //游戏服务
+// 所有服务集合
+var mgrList map[string]NewBuild = map[string]NewBuild{
+	"gateService": NewGateMgr, // 网关服务
+	"dbService":   NewDBMgr,   // db服务
 }
 
-// 创建一个gameserver
-func createMgr(app pitaya.Pitaya, sv_type string, isFrontend bool) (*GameServer, bool) {
-	gs := &GameServer{
-		app : app,
-	}
-
-	mgr_func, ok := mgr_list[sv_type]
+// 创建服务
+func createGameServer(svType string, isFrontend bool, gs *GameServer) (*ServerConfig, error) {
+	conf := &ServerConfig{}
+	newFunc, ok := mgrList[svType]
 	if !ok {
-		logger.Log.Warn("error sv_type is:", sv_type)
-		return gs, false
+		return conf, errors.New("not find svType")
 	}
 
-	gs.mgr = mgr_func(gs, sv_type, isFrontend)
-
-	return gs, true
-}
-
-// 获取服务器配置
-func serverConf() *ServerConfig {
-	return &ServerConfig{}
+	mgr, conf := newFunc(gs, svType, isFrontend)
+	gs.mgr = mgr
+	return conf, nil
 }

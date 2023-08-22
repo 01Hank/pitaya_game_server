@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package protos;
+option go_package = "protofile/protos";
+
+message TestReq {
+    string name = 1;
+    int64 age   = 2;
+}
+
+message  TestResp{
+    string err = 1;
+}

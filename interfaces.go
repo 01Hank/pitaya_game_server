@@ -1,8 +1,6 @@
 package main
 
-import "github.com/topfreegames/pitaya/v2"
-
-type ServiceMgrIn interface {
-	Start(app pitaya.Pitaya) error
+type ServiceMgrIN interface {
+	Start(server *GameServer) error
 	Close()
 }
